@@ -1,0 +1,42 @@
+#nav {
+	margin-top: 30px;
+}
+
+.inline li{
+	display: inline-block;
+	margin-left: 40px;
+}
+
+.right {
+	text-align: right;
+}
+
+.center {
+	text-align: center;
+}
+
+#welcome-block {
+	margin-top: 40px;
+}
+
+.documentation-block {
+	margin-top: 100px;
+}
+
+.documentation-block p {
+	/*margin-left: 40px;*/
+}
+
+.documentation-block p:first-letter {
+	font-size: 25px;
+	/*margin-left: 20px;*/
+}
+
+#welcome-logo {
+	height: 90px;
+}
+
+
+footer {
+	margin-top: 160px;
+}

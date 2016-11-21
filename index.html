@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>restify.js</title>
+	<link rel="icon" type="image/png" href="/assets/img/logo.png">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.2.0/milligram.min.css">
+	<link rel="stylesheet" href="assets/css/master.css">
+</head>
+<body>
+	<nav class="container" id="nav">
+		<div class="row">
+			<div class="column">
+				Restify.js
+			</div>
+			<div class="column column-50 column-offset-50">
+				<ul class="inline right">
+					<li><a href="#documentation">Docs</a></li>
+					<li><a href="https://github.com/georoot/restify.js">Github</a></li>
+					<li><a href="#contribute">Contribute</a></li>
+				</ul>
+			</div>
+		</div>
+	</nav>
+
+	<div class="container center" id="welcome-block">
+		<img src="/assets/img/logo.png" alt="" id="welcome-logo">
+		<h1>
+			Restify.js
+		</h1>
+		<h4>
+			Elegant api design framework
+		</h4>
+		<code>npm i --save restify.js</code>
+	</div>
+
+	<div class="container documentation-block">
+		<h4>Why use <code>Restify.js</code> at all?</h4>
+		<p>Restify.js is an express addon that can be used to create manageable api faster and more efficiently. It provides out-of-box features like authentication and user model integration which saves development time. The library can also be easily extended to work with custom scripts.</p>
+	</div>
+
+	<div class="container documentation-block" id="documentation">
+		<h4>Installing from <a href="https://www.npmjs.com/package/restify.js">npm</a></h4>
+		<p>The library can be installed directly installed from npm using <pre><code>npm i --save restify.js</code></pre>Alternatively if you want to contribute to package, you can clone the repo from <a href="https://github.com/georoot/restify.js">github repository</a>.</p>
+	</div>
+
+
+
+	<div class="container documentation-block">
+
+		<h4>Creating json file to describe api</h4>
+		<p>
+			Currently the library only accepts <code>json</code> file to create api design although the roadmap does include making the library compatible with <a href="http://swagger.io/">swagger.io</a> YAML representation.</p>
+
+
+		<h5>Selecting database for the api</h5>
+		<p>
+			Restify.js uses mongodb for its database needs. The first step is to select database for the api to use. Let us say we need to use a database called <code>coffee</code> for storing all data.Create a json file <code>api.v1.json</code> and put in the following contents
+			<pre><code>
+{
+	"__meta__":{
+		"database": "coffee"
+	}
+}	
+			</code></pre>
+			the <code>__meta__</code> or the <code>Meta Block</code> stores all the important information about the api. We just declared our database called <code>coffee</code> inside the <code>Meta Block</code>. The library automatically connects to database from the information in <code>Meta block</code> and eliminates the need to write any additional code for the same.
+		</p>
+
+
+		<h5>Defining namespace for api</h5>
+		<p>
+			We all know that api can have multiple versions. In order to get over this problem restify.js uses namespace defined in <code>Meta Block</code>. They are added to all routes used with the api. For example if you define a route called <code>/user</code> in future and define namespace to <code>v1</code> restify.js will create a route <code>/v1/user</code>. Now you can have multiple json files all with different namespace representing different api version. In order to define namespace in <code>Meta block</code> the code would be
+			<pre><code>
+"__meta__":{
+	"namespace" : "v1"
+}
+			</code></pre>
+		Remember that <code>namespace</code> definition is in addition to addition of <code>database</code> from previous section.
+		</p>
+
+
+		<h5>Using authentication strategy</h5>
+		<p>
+			Authentication is a very integral part of many applications. <code>Restify.js</code> provides out of box strategy that can be used to create api endpoints without any programing needed. The <code>Authentication block</code> comes inside the <code>Meta block</code>.Let us enable token based authentication in our api. The definition for authentication would be
+			<pre><code>
+"__meta__" : {
+	"auth" : {
+		"enableAuth"   : true,
+		"routeHandle"  : "auth",
+		"userModel"    : "restify.js/models/user.js",
+		"authStrategy" : "restify.js/auth/tokenAuth.js",
+		"privateKey"   : "id_rsa"
+	}
+}
+			</code></pre>
+			Currently as of <code>Restify.js#0.0.2</code> only <code>tokenAuth</code> strategy has been implemented but custom strategies can also be made. For hacking into authentication strategy have a look at <a href="https://github.com/georoot/restify.js/blob/master/auth/tokenAuth.coffee">this file</a>. The <code>privateKey</code> is needed for <code>jsonwebtoken</code> library to encode the tokens.
+		</p>
+
+
+
+
+		<h5>Creating custom models or tables in mongodb</h5>
+		<p>
+			Models are very important while creating a rest api. Almost everyone has the same approach for creating them.Restify.js makes it simpler to manage <code>models</code> and associate views with them. Let us start by creating a simple model that stores <code>Code snippets</code> for a code sharing application. Create a new file called <code>codeModel.js</code> inside your project. Now define your model using the following javascript
+			<code><pre>
+var mongoose = require('mongoose');
+var Schema = mongoose.Schema;
+ 
+var codeSnippet = new Schema({
+    code : {type: String, required: true}
+});
+ 
+module.exports = mongoose.model('snippet', codeSnippet);
+			</pre></code>
+			And you are done. Now you just need to register the model inside your json file. Let us say we want to refer to this model as <code>snippet</code> in future. The document for that would be
+			<code><pre>
+ {
+	"__meta__" : {...},
+	"models"   : {
+		"snippet" : "./codeModel.js"
+	}
+ }
+			</pre></code>
+			<blockquote>
+			<em>NOTE : "models" is not a part of meta block.</em>
+			</blockquote>
+		</p>
+
+
+
+		<h5>Creating reusable custom mixin</h5>
+		<p>
+			Mixins are reusable library that can be used in multiple views. As of <code>restify.js#0.0.2</code> mixins are not packaged with the library but they are on roadmap of future versions. Let us create a custom mixin that reads all the data and lists out the json. Create a file <code>readMixin.js</code> and add the following code
+			<pre><code>
+module.exports = function (uri,model,router) {
+	router.get (uri, function(req,res,next) {
+		model.find({},function (err,objects) {
+			if (err) {
+				return res.json(err)
+			} else {
+				return res.json(objects)
+			}
+		});
+	});
+}
+			</code></pre>
+			which is pretty simple way of saying to make a <code>GET</code> method that will return all the data. But now you may ask what is the use ? Well the <code>readMixin.js</code> is generic and can be used across multiple views which we will see in the next section.
+		</p>
+
+
+		<h5>Creating a view</h5>
+		<p>
+			Finally after everything we need to actually define the routes and link models. This is the part of json that makes it happen. Let us suppose that we want to populate all snippets that we just made at <code>/snippets</code> url. Sample json configuration would be
+			<pre><code>
+{
+	"__meta__" : {...},
+	"models"   : {...},
+	"views"    : {
+		"/snippets" : {
+			"model" : "snippet",
+			"mixin" : ["./readMixin.js"]
+		}
+	}
+}
+			</code></pre>
+			The snippet model is taken from <code>Model block</code> of configuration and the mixin file is the one we descibed in previous section. Multiple mixins can be used at the same time by adding them to array.
+			<blockquote>
+			<em>NOTE : There is already a roadmap for providing with commonly used snippets. If you would like to contribute send a pull request on github.</em>
+			</blockquote>
+		</p>
+
+
+	</div>
+
+
+
+	<div class="container documentation-block">
+		<h4>Deploy api on express application</h4>
+		<p>
+			Now that we have our complete api description in <code>api.v1.json</code> file, let us deploy that over an <code>express server</code>. The following code shows a simple example that will create the snippet api for us
+			<pre><code>
+var express = require('express');
+var restify = require('restify.js');
+
+var expressApp  = express();
+var apiInstance = new restify();
+
+apiInstance
+	.loadJson('api.v1.json')
+	.onload(function (status,context) {
+		if (status) {
+			expressApp.use("/",context.as_views());
+		} else {
+			console.error("Error while parsing api.v1.json");
+		}
+	});
+
+expressApp.listen(3000);
+			</code></pre>
+			And you are done. Head over to browser at url <code>/v1/snippets</code> and you can see a list of all snippets in the database.
+		</p>
+	</div>
+
+
+	<div class="container documentation-block" id="contribute">
+		<h4>Interested in contributing to the project</h4>
+		<p>
+			The project is in eary stages and can use your help. If you are interested in making source code better make a pull request on <a href="https://github.com/georoot/restify.js">github</a> or you can always test the library and add <a href="https://github.com/georoot/restify.js/issues">issues</a> if you come across some bug.
+		</p>
+	</div>
+
+
+	<footer></footer>
+
+
+
+
+</body>
+</html>
